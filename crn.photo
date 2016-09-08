@@ -1,0 +1,2 @@
+* * * * * export DISPLAY=:0; /home/ed/photoctl.py >> /home/ed/.photoctl.log 2>&1
+
