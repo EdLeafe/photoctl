@@ -1,2 +1,2 @@
-* * * * * export DISPLAY=:0; /home/ed/photoctl.py >> /home/ed/.photoctl.log 2>&1
+* * * * * export DISPLAY=:0; /home/pi/photoctl.py >> /home/pi/.photoctl.log 2>&1
 
