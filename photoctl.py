@@ -6,7 +6,7 @@ import os
 from subprocess import Popen, PIPE
 
 HOMEDIR = "/home/pi/projects/photoviewer"
-DATE_FMT = "%Y.%m.%d %H:%M:%S"
+DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
 def runproc(cmd, wait=True):
     if wait:
@@ -19,15 +19,17 @@ def runproc(cmd, wait=True):
         return stdout_text, stderr_text
 
 now = datetime.datetime.now().strftime(DATE_FMT)
-PHOTODIR = "%s/display" % HOMEDIR
+PHOTO_PID_FILE = "%s/photo.pid" % HOMEDIR
+with open(PHOTO_PID_FILE) as ff:
+    PHOTO_PID = ff.read().strip()
 PHOTOAPP_CMD = "cd %s; python3 photo.py &" % HOMEDIR
-PID_CMD = "ps -ef | grep %s | grep -v grep | awk '{print $2}'"
+#PID_CMD = "ps -ef | grep  photo.py | grep -v grep | awk '{print $2}'"
+PID_CMD = "ps --no-headers -p %s" % PHOTO_PID
+photoapp_out, err = runproc(PID_CMD)
+photoapp_running = bool(photoapp_out)
 
 with open("/home/pi/.photoctl") as ff:
     action = ff.read().strip()
-photoapp_out, err = runproc(PID_CMD % "photo.py")
-photoapp_running = bool(photoapp_out)
-
 if action == "STOP":
     if photoapp_running:
         print(now, "Stopping python controller")
