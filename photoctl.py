@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import datetime
 import os
+import six
 from subprocess import Popen, PIPE
 import time
 
@@ -22,22 +23,28 @@ def runproc(cmd, wait=True):
 
 
 def killapp(pid):
-    os.kill(int(photoapp_out), 15)
+    try:
+        os.kill(pid, 15)
+    except ProcessLookupError:
+        pass
 
 
 now = datetime.datetime.now().strftime(DATE_FMT)
 PHOTO_PID_FILE = "%s/photo.pid" % HOMEDIR
 with open(PHOTO_PID_FILE) as ff:
-    PHOTO_PID = ff.read().strip()
+    PHOTO_PID = int(ff.read().strip())
 PHOTOAPP_CMD = "cd %s; python3 photo.py &" % HOMEDIR
 #PID_CMD = "ps -ef | grep  photo.py | grep -v grep | awk '{print $2}'"
-PID_CMD = "ps --no-headers -p %s" % PHOTO_PID
+PID_CMD = "ps --no-headers -p %s | awk '{print $2}'" % PHOTO_PID
 photoapp_out, err = runproc(PID_CMD)
 photoapp_running = bool(photoapp_out)
 MAX_HOST_CHECK_INTERVAL = 3600
 HOST_CHECKED_FILE = "%s/.host_checked" % HOMEDIR
 try:
     mtime = os.stat(HOST_CHECKED_FILE).st_mtime
+    if isinstance(mtime, six.string_types):
+        mtime = mtime.decode("utf-8")
+    mtime = float(mtime)
 except FileNotFoundError:
     # Running with an older photo app that doesn't create the file.
     mtime = time.time()
@@ -52,11 +59,11 @@ if action == "PAUSE":
 if action == "STOP":
     if photoapp_running:
         print(now, "Stopping python controller")
-        killapp(photoapp_out)
-        os.kill(int(photoapp_out), 15)
+        killapp(PHOTO_PID)
 elif action == "START":
     if restart:
-        killapp(photoapp_out)
+        print(now, "Python controller unresponsive; restarting")
+        killapp(PHOTO_PID)
         photoapp_running = False
     if not photoapp_running:
         print(now, "Starting python controller")
