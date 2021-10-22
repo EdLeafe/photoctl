@@ -1,7 +1,0 @@
-* * * * * export DISPLAY=:0; /home/pi/photoctl.py >> /home/pi/.photoctl.log 2>&1
-
-# Turn off the monitor at 11pm
-#0 23 * * * vcgencmd display_power 0 > /dev/null 2>&1
-0 23 * * * echo 'standby 0' | cec-client -s -d 1 > /dev/null 2>&1
-# Turn on the monitor at 6:15am
-15 6 * * * echo 'on 0' | cec-client -s -d 1 > /dev/null 2>&1
